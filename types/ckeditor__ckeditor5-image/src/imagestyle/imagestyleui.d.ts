@@ -1,4 +1,5 @@
 import { Plugin } from '@ckeditor/ckeditor5-core';
+import { ImageConfig } from '../image';
 import ImageStyleEditing from './imagestyleediting';
 
 export default class ImageStyleUI extends Plugin {
@@ -15,4 +16,16 @@ export default class ImageStyleUI extends Plugin {
         'In line': string;
     };
     init(): void;
+}
+
+export interface ImageStyleDropdownDefinition {
+    name: string;
+    title?: string;
+    items: Array<ImageConfig['styles']>;
+}
+
+declare module '@ckeditor/ckeditor5-core/src/plugincollection' {
+    interface Plugins {
+        ImageStyleUI: ImageStyleUI;
+    }
 }

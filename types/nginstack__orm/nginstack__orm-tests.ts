@@ -21,3 +21,8 @@ entity.clone(); // $ExpectType Entity
 entity.persist(); // $ExpectType number
 entity.toJSONString(); // $ExpectType string
 entity.toJSONSchema(); // $ExpectType any
+
+function testMajorVersions(prior: number, current: number): boolean {
+    return current > prior;
+}
+testMajorVersions(55, 56); // $ExpectType boolean

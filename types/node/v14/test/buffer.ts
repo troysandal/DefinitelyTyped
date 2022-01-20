@@ -7,10 +7,12 @@ import {
     constants,
     kMaxLength,
     kStringMaxLength,
-} from 'buffer';
+    Blob,
+} from 'node:buffer';
 
 const utf8Buffer = new Buffer('test');
 const base64Buffer = new Buffer('', 'base64');
+const base64UrlBuffer = new Buffer('', 'base64url');
 const octets: Uint8Array = new Uint8Array(123);
 const octetBuffer = new Buffer(octets);
 const sharedBuffer = new Buffer(octets.buffer);
@@ -103,6 +105,7 @@ const result2 = Buffer.concat([utf8Buffer, base64Buffer] as ReadonlyArray<Uint8A
     const buf1: Buffer = Buffer.alloc(5);
     const buf2: Buffer = Buffer.alloc(5, 'a');
     const buf3: Buffer = Buffer.alloc(11, 'aGVsbG8gd29ybGQ=', 'base64');
+    const buf4: Buffer = Buffer.alloc(11, 'aGVsbG8gd29ybGQ', 'base64url');
 }
 // Class Method: Buffer.allocUnsafe(size)
 {
@@ -260,3 +263,21 @@ b.fill('a').fill('b');
     const target: TranscodeEncoding = 'ascii';
     transcode(Buffer.from('€'), source, target); // $ExpectType Buffer
 }
+
+// Blob
+async () => {
+    const blob = new Blob(['asd', Buffer.from('test'), new Blob(['dummy'])], {
+        type: 'application/javascript',
+        encoding: 'base64',
+    });
+
+    blob.size; // $ExpectType number
+    blob.type; // $ExpectType string
+
+    blob.arrayBuffer(); // $ExpectType Promise<ArrayBuffer>
+    blob.text(); // $ExpectType Promise<string>
+    blob.slice(); // $ExpectType Blob
+    blob.slice(1); // $ExpectType Blob
+    blob.slice(1, 2); // $ExpectType Blob
+    blob.slice(1, 2, 'other'); // $ExpectType Blob
+};

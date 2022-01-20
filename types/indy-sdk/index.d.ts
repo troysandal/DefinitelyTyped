@@ -30,26 +30,10 @@ export function packMessage(
     senderVk: Verkey | null,
 ): Promise<Buffer>;
 export function unpackMessage(wh: WalletHandle, jwe: Buffer): Promise<Buffer>;
-export function addWalletRecord(
-    wh: WalletHandle,
-    type: string,
-    id: string,
-    value: string,
-    tags: Record<string, string>,
-): Promise<void>;
+export function addWalletRecord(wh: WalletHandle, type: string, id: string, value: string, tags: Tags): Promise<void>;
 export function updateWalletRecordValue(wh: WalletHandle, type: string, id: string, value: string): Promise<void>;
-export function updateWalletRecordTags(
-    wh: WalletHandle,
-    type: string,
-    id: string,
-    tags: Record<string, string>,
-): Promise<void>;
-export function addWalletRecordTags(
-    wh: WalletHandle,
-    type: string,
-    id: string,
-    tags: Record<string, string>,
-): Promise<void>;
+export function updateWalletRecordTags(wh: WalletHandle, type: string, id: string, tags: Tags): Promise<void>;
+export function addWalletRecordTags(wh: WalletHandle, type: string, id: string, tags: Tags): Promise<void>;
 export function deleteWalletRecord(wh: WalletHandle, type: string, id: string): Promise<void>;
 export function getWalletRecord(
     wh: WalletHandle,
@@ -70,7 +54,9 @@ export function fetchWalletSearchNextRecords(
 ): Promise<WalletRecordSearch>;
 export function closeWalletSearch(sh: SearchHandle): Promise<void>;
 export function createPoolLedgerConfig(configName: string, config?: PoolConfig): Promise<void>;
+export function deletePoolLedgerConfig(configName: string): Promise<void>;
 export function openPoolLedger(configName: string, config?: RuntimePoolConfig): Promise<PoolHandle>;
+export function closePoolLedger(poolHandle: PoolHandle): Promise<void>;
 export function setProtocolVersion(version: number): Promise<void>;
 export function buildNymRequest(
     submitterDid: Did,
@@ -133,6 +119,14 @@ export function appendTxnAuthorAgreementAcceptanceToRequest(
 ): Promise<LedgerRequest>;
 export function abbreviateVerkey(did: Did, fullVerkey: Verkey): Promise<Verkey>;
 export function generateNonce(): Promise<string>;
+
+export function buildGetAttribRequest(
+    submitterDid: Did | null,
+    targetDid: Did,
+    raw: string | null,
+    hash: string | null,
+    enc: string | null,
+): Promise<LedgerRequest>;
 
 // -------------------------------------------- //
 // ----------------- ANONCREDS ---------------- //
@@ -243,6 +237,14 @@ export function verifierVerifyProof(
     revRegs: RevStates,
 ): Promise<boolean>;
 
+export function createRevocationState(
+    blobStorageReaderHandle: BlobReaderHandle,
+    revRegDef: RevocRegDef,
+    revRegDelta: RevocRegDelta,
+    timestamp: number,
+    credRevId: CredRevocId,
+): Promise<RevState>;
+
 // -------------------------------------------- //
 // --------------- BLOB STORAGE --------------- //
 // -------------------------------------------- //
@@ -261,6 +263,7 @@ export type SchemaId = string;
 export type CredDefId = string;
 export type CredentialId = string;
 export type KeyDerivationMethod = 'ARGON2I_MOD' | 'ARGON2I_INT' | 'RAW';
+export type Tags = Record<string, string | undefined>;
 
 // TODO: Maybe we can make this a bit more specific?
 export type WalletQuery = Record<string, unknown>;
@@ -496,8 +499,6 @@ export interface IndyProof {
     proof: any;
     identifiers: Array<{
         schema_id: string;
-        cred_def_id: string;
-        rev_reg_id?: string | undefined;
         timestamp?: number | undefined;
     }>;
 }
@@ -522,6 +523,12 @@ export interface RevStates {
     [key: string]: {
         [key: string]: unknown;
     };
+}
+
+export interface RevState {
+    rev_reg: RevocReg;
+    witness: Witness;
+    timestamp: number;
 }
 
 export interface IndyRequestedCredentials {
@@ -612,6 +619,10 @@ export interface RevocReg {
     ver: string;
 }
 
+export interface Witness {
+    [key: string]: unknown;
+}
+
 export interface KeyConfig {
     seed?: string | undefined;
 }
@@ -640,7 +651,7 @@ export interface WalletRecord {
 
 export interface WalletRecordSearch {
     totalCount: string | null;
-    records: WalletRecord[];
+    records: WalletRecord[] | null;
 }
 
 export interface GetNymResponse {
